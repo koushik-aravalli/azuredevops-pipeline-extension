@@ -1,0 +1,26 @@
+# Build Name format
+name: $(TeamProject)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+# Variables
+variables:
+  publisher_id: "Koushik-Aravalli"
+  name: "Sample-Extension"
+  extension_location: "../SampleExtension"
+  service_connection: "azdevops-extension-spn"
+
+# Trigger
+trigger: 
+  branches:
+    include:
+    - master
+  paths:
+    exclude:
+    - README.md
+
+# Jobs
+jobs:
+  - template: deploy-extension.job-template.yaml
+    parameters:
+      extension_name: $(name)
+      extension_path: $(extension_location)
+	  service_connection: $(service_connection)

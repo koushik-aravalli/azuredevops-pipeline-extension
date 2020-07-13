@@ -1,0 +1,189 @@
+{
+    "id": "fbfe29f7-5f16-45fe-8d3e-15cab6aca53b",
+    "name": "Task-One",
+    "friendlyName": "Task One",
+    "description": "First Task to be added to our extension",
+    "helpMarkDown": "",
+    "category": "Deploy",
+    "visibility": [
+      ""
+    ],
+    "author": "Koushik Aravalli",
+    "version": {
+      "Major": 0,
+      "Minor": 0,
+      "Patch": 1
+    },
+    "preview": "true",
+    "instanceNameFormat": "Task One",
+    "groups": [
+      {
+        "name": "AzureDetails",
+        "displayName": "Azure Details",
+        "isExpanded": true
+      },
+      {
+        "name": "DeploymentDetails",
+        "displayName": "Deployment Details",
+        "isExpanded": true
+      }
+    ],
+    "inputs": [
+      {
+        "name": "ConnectedServiceNameSelector",
+        "aliases": [
+          "azureConnectionType"
+        ],
+        "label": "Azure Connection Type",
+        "type": "pickList",
+        "defaultValue": "ConnectedServiceNameARM",
+        "required": true,
+        "helpMarkDown": "",
+        "groupName": "AzureDetails",
+        "options": {
+          "ConnectedServiceNameARM": "Azure Resource Manager"
+        }
+      },
+      {
+        "name": "ConnectedServiceNameARM",
+        "aliases": [
+          "azureSubscription"
+        ],
+        "label": "Azure Subscription",
+        "type": "connectedService:AzureRM",
+        "defaultValue": "",
+        "required": true,
+        "helpMarkDown": "Azure Resource Manager subscription to configure before running PowerShell",
+        "groupName": "AzureDetails",
+        "visibleRule": "ConnectedServiceNameSelector = ConnectedServiceNameARM"
+      },
+      {
+        "name": "ResourceGroupName",
+        "label": "Azure Resource Group",
+        "type": "pickList",
+        "defaultValue": "",
+        "required": true,
+        "helpMarkDown": "Azure Resource Group where LogicApp is deployed",
+        "groupName": "DeploymentDetails"
+      },
+      {
+        "name": "action",
+        "label": "Desired Action",
+        "type": "pickList",
+        "defaultValue": "New",
+        "required": true,
+        "helpMarkDown": "Create/Remove LogicApp in/from ResourceGroup.",
+        "groupName": "DeploymentDetails",
+        "options": {
+          "New": "New",
+          "Remove": "Remove"
+        }
+      },
+      {
+        "name": "NamingConvention",
+        "label": "Naming Convention",
+        "type": "pickList",
+        "defaultValue": "",
+        "required": true,
+        "helpMarkDown": "Azure Resource Group where LogicApp is deployed",
+        "options": {
+          "projectName-workflowName-location-environment-la": "projectName-workflowName-location-environment-la",
+          "projectName-WorkflowName-environment-la": "projectName-WorkflowName-environment-la"
+        },
+        "groupName": "DeploymentDetails",
+        "visibleRule": "action = New"
+      },
+      {
+        "name": "WorkflowName",
+        "label": "Logic App Name Suffix",
+        "type": "string",
+        "required": true,
+        "helpMarkDown": "Name of the workflow, deployed LogicApp will be prefixed with ServiceName.",
+        "groupName": "DeploymentDetails",
+        "visibleRule": "action = New"
+      },
+      {
+        "name": "LogicAppName",
+        "label": "LogicApp Name",
+        "type": "pickList",
+        "required": true,
+        "helpMarkDown": "Name of the deployed LogicApp.",
+        "groupName": "DeploymentDetails",
+        "visibleRule": "action = Remove",
+        "properties": {
+          "EditableOptions": "True"
+         }
+      },
+      {
+        "name": "IntegrationAccount",
+        "label": "Integration Account",
+        "type": "pickList",
+        "required": false,
+        "helpMarkDown": "Integration Account where Maps and Schemas are available for.",
+        "groupName": "DeploymentDetails",
+        "visibleRule": "action = New",
+        "properties": {
+          "EditableOptions": "True"
+        }
+      },
+      {
+        "name": "VaultName",
+        "label": "Vault Name",
+        "type": "pickList",
+        "required": true,
+        "helpMarkDown": "Deployed LogicApp will be able to access keys/secrets within this Keyvault.",
+        "groupName": "DeploymentDetails",
+        "visibleRule": "action = New",
+        "properties": {
+          "EditableOptions": "True"
+         }
+      },
+      {
+        "name": "WorkFlowDefinitionFilePath",
+        "label": "LogicApp Definition File Path",
+        "type": "filePath",
+        "required": false,
+        "helpMarkDown": "LogicApp Definition file.",
+        "groupName": "DeploymentDetails",
+        "visibleRule": "action = New"
+      },
+      {
+        "name": "WorkFlowParametersFilePath",
+        "label": "LogicApp Parameters File Path",
+        "type": "filePath",
+        "required": false,
+        "helpMarkDown": "LogicApp Parameters file.",
+        "groupName": "DeploymentDetails",
+        "visibleRule": "action = New"
+      }
+    ],
+    "dataSourceBindings": [
+      {
+        "target": "ResourceGroupName",
+        "endpointId": "$(ConnectedServiceNameARM)",
+        "dataSourceName": "AzureResourceGroups"
+      },
+      {
+        "target": "VaultName",
+        "endpointId": "$(ConnectedServiceNameARM)",
+        "dataSourceName": "AzureKeyVaults"
+      },
+      {
+        "target": "IntegrationAccount",
+        "endpointId": "$(ConnectedServiceNameARM)",
+        "endpointUrl": "{{{endpoint.url}}}/subscriptions/{{{endpoint.subscriptionId}}}/providers/Microsoft.Logic/IntegrationAccounts?api-version=2016-06-01",
+        "resultSelector": "jsonpath:$.value[*].name"
+      },
+      {
+        "target": "LogicAppName",
+        "endpointId": "$(ConnectedServiceNameARM)",
+        "endpointUrl": "{{{endpoint.url}}}/subscriptions/{{{endpoint.subscriptionId}}}/providers/Microsoft.Logic/workflows?api-version=2016-06-01",
+        "resultSelector": "jsonpath:$.value[*].name"
+      }
+    ],
+    "execution": {
+      "PowerShell3": {
+        "target": "main.ps1"
+      }
+    }
+  }

@@ -1,0 +1,41 @@
+{
+  "manifestVersion": 1,
+  "id": "Sample-Extension",
+  "version": "1.0.0",
+  "name": "Sample Extension",
+  "description": "Customized extension",
+  "publisher": "Koushik-Aravalli",
+  "targets": [
+    {
+      "id": "Microsoft.VisualStudio.Services.Cloud"
+    }
+  ],
+  "icons": {
+    "default": "icon.png"
+  },
+  "categories": [
+    "Azure Pipelines"
+  ],
+  "tags": [
+    "Azure",
+    "DevOps",
+    "PaaS"
+  ],
+  "contributions": [
+    {
+      "id": "Task-One",
+      "type": "ms.vss-distributed-task.task",
+      "targets": [
+        "ms.vss-distributed-task.tasks"
+      ],
+      "properties": {
+        "name": "LogicApp"
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "Task-One"
+    }
+  ]
+}

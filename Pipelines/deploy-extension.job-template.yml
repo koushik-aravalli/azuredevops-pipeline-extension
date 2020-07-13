@@ -1,0 +1,49 @@
+parameters:
+  extension_name: ''
+  extension_path: ''
+  service_connection: ''
+
+jobs:
+- job: "Deploy_Extension"
+  pool:
+    vm_image: windows-latest
+  variables:
+    Extension.Name: ${{parameters.extension_name}}
+  steps:
+    - task: ms-devlabs.vsts-developer-tools-build-tasks.extension-version-build-task.QueryAzureDevOpsExtensionVersion@2
+      displayName: 'Query Extension Version'
+      inputs:
+        connectedServiceName: ${{parameters.service_connection}}
+        publisherId: Koushik-Aravalli ## Change accordingly, publisherId doesnt seem to support variablization
+        extensionId: $(Extension.Name)
+        versionAction: Patch
+        outputVariable: QueryExtension.Version
+        extensionVersionOverride: QueryExtension.VersionOverride
+
+    - task: ms-devlabs.vsts-developer-tools-build-tasks.package-extension-build-task.PackageAzureDevOpsExtension@2
+      displayName: 'Package Extension'
+      inputs:
+        rootFolder: ${{ parameters.extension_path }}
+        outputPath: output/vstspackage.vsix
+        extensionVersion: '$(QueryExtension.Version)'
+        updateTasksVersion: true
+        updateTasksVersionType: patch
+        extensionVisibility: private
+        outputVariable: CreateExtension.OutputPath
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: output'
+      inputs:
+        PathtoPublish: "$(CreateExtension.OutputPath)"
+        ArtifactName: output
+
+    - task: ms-devlabs.vsts-developer-tools-build-tasks.publish-extension-build-task.PublishAzureDevOpsExtension@2
+      displayName: 'Publish Extension'
+      inputs:
+        connectedServiceName: ${{ parameters.service_connection }}
+        fileType: vsix
+        vsixFile: $(CreateExtension.OutputPath)
+        publisherId: Koushik-Aravalli ## Change accordingly, publisherId doesnt seem to support variablization
+        extensionId: $(Extension.Name)
+        extensionName: $(Extension.Name)
+        updateTasksVersion: false

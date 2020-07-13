@@ -1,0 +1,74 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "logicAppName": {
+        "type": "string",
+        "defaultValue": "",
+        "metadata": {
+          "description": "Name of the logic app. Value should be according to naming convention- <ServiceName>-<WorkflowName>-<Environment>-la"
+        }
+      },
+      "creationTime": {
+        "type": "string",
+        "defaultValue": "[utcNow('d')]",
+        "metadata": {
+          "description": "Creation date time"
+        }
+      }
+    },
+    "variables": {
+      "msi": "[concat(resourceId('Microsoft.Logic/workflows', parameters('logicAppName')), '/providers/Microsoft.ManagedIdentity/Identities/default')]",
+      "version": "LogicApp 1.0"
+    },
+    "resources": [
+      {
+        "type": "Microsoft.Logic/workflows",
+        "apiVersion": "2016-06-01",
+        "name": "[parameters('logicAppName')]",
+        "location": "[resourceGroup().location]",
+        "identity": {
+          "type": "SystemAssigned"
+        },
+        "tags": {
+          "version": "[variables('version')]",
+          "creationDate": "[parameters('creationTime')]"
+        },
+        "properties": {
+          "state": "Disabled",
+          "parameters": {},
+          "definition": {
+            "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {},
+            "triggers": {},
+            "actions": {},
+            "outputs": {}
+          }
+        }
+      },
+      {
+        "name": "[concat(parameters('logicAppName'), '/Microsoft.Authorization/', parameters('logicAppName'), '-lock')]",
+        "type": "Microsoft.Logic/workflows/providers/locks",
+        "apiVersion": "2016-09-01",
+        "dependsOn": [
+          "[concat('Microsoft.Logic/workflows/', parameters('logicAppName'))]"
+        ],
+        "properties": {
+          "level": "CanNotDelete",
+          "notes": "Resource should not be deleted."
+        }
+      }
+    ],
+    "outputs": {
+      "logicappId": {
+        "type": "string",
+        "value": "[resourceid('Microsoft.Logic/workflows',parameters('logicAppName'))]"
+      },
+      "msi": {
+        "type": "string",
+        "value": "[reference(concat('Microsoft.Logic/workflows/', parameters('logicAppName')), '2017-07-01', 'Full').identity.principalId]"
+      }
+    }
+  }
+  
